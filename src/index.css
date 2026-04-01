@@ -333,3 +333,47 @@ img {
     grid-template-columns: 1fr;
   }
 }
+.nav-link {
+  color: var(--color-text-soft);
+  font-weight: 600;
+}
+
+.nav-link:hover {
+  color: var(--color-primary);
+}
+
+.active-link {
+  color: var(--color-primary);
+}
+
+.topbar-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.simple-page {
+  margin-top: 24px;
+  padding: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.simple-page h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 32px;
+}
+
+.simple-page p {
+  margin: 0;
+  line-height: 1.9;
+  color: var(--color-text-soft);
+}
+
+.not-found-page {
+  text-align: center;
+}
