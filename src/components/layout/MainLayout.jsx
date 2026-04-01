@@ -1,8 +1,17 @@
-import { Link, NavLink, Outlet } from "react-router";
+import { Link, NavLink, Outlet, useNavigate } from "react-router";
+import useAuth from "../../hooks/useAuth";
 
 function MainLayout() {
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+
   const navClassName = ({ isActive }) =>
     isActive ? "nav-link active-link" : "nav-link";
+
+  async function handleLogout() {
+    await logout();
+    navigate("/");
+  }
 
   return (
     <div className="app-shell">
@@ -28,12 +37,31 @@ function MainLayout() {
         </nav>
 
         <div className="topbar-actions">
-          <Link to="/login" className="ghost-btn topbar-link-btn">
-            تسجيل الدخول
-          </Link>
-          <Link to="/create-auction" className="primary-btn topbar-link-btn">
-            أنشئ مزادًا
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" className="ghost-btn topbar-link-btn">
+                {user?.name || "الملف الشخصي"}
+              </Link>
+              <button className="ghost-btn" onClick={handleLogout}>
+                تسجيل الخروج
+              </button>
+              <Link to="/create-auction" className="primary-btn topbar-link-btn">
+                أنشئ مزادًا
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="ghost-btn topbar-link-btn">
+                تسجيل الدخول
+              </Link>
+              <Link to="/register" className="ghost-btn topbar-link-btn">
+                إنشاء حساب
+              </Link>
+              <Link to="/create-auction" className="primary-btn topbar-link-btn">
+                أنشئ مزادًا
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
