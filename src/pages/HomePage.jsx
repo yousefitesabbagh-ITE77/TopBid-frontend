@@ -1,31 +1,49 @@
-const featuredAuctions = [
-  {
-    id: 1,
-    title: "ساعة فاخرة إصدار محدود",
-    price: "12,500",
-    timeLeft: "2 يوم 5 ساعات",
-    image:
-      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    title: "سيارة كلاسيكية نادرة",
-    price: "900,000",
-    timeLeft: "1 يوم 8 ساعات",
-    image:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    title: "مزهرية أثرية مزخرفة",
-    price: "24,000",
-    timeLeft: "3 أيام 2 ساعة",
-    image:
-      "https://images.unsplash.com/photo-1578500351865-2de31d2a5a07?auto=format&fit=crop&w=800&q=80",
-  },
-];
+import { useEffect, useState } from "react";
+import {
+  fetchActiveAuctions,
+  formatAuctionPrice,
+  formatAuctionTimeLeft,
+} from "../lib/auctions";
+
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1000&q=80";
 
 function HomePage() {
+  const [auctions, setAuctions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAuctions() {
+      try {
+        setIsLoading(true);
+        setErrorMessage("");
+
+        const loadedAuctions = await fetchActiveAuctions();
+
+        if (isMounted) {
+          setAuctions(loadedAuctions);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setErrorMessage(error.message || "تعذر تحميل المزادات الحالية.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadAuctions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <>
       <section className="hero-section">
@@ -44,36 +62,84 @@ function HomePage() {
         </div>
 
         <div className="hero-card">
-          <img
-            src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1000&q=80"
-            alt="مزاد مميز"
-          />
+          <img src={HERO_IMAGE} alt="مزاد مميز" />
         </div>
       </section>
 
       <section className="section-header">
-        <div>
-          <h3>مزادات مميزة</h3>
-          <p>هذه بيانات ثابتة مؤقتًا إلى أن نربط القائمة الحقيقية من الباك.</p>
+        <div className="section-header-row">
+          <div>
+            <h3>المزادات الحالية</h3>
+            <p>هذه القائمة قادمة الآن من الباك الحقيقي بدل البيانات الثابتة.</p>
+          </div>
+
+          {!isLoading && !errorMessage && auctions.length > 0 ? (
+            <p className="auctions-count">عدد المزادات المعروضة: {auctions.length}</p>
+          ) : null}
         </div>
       </section>
 
-      <section className="cards-grid">
-        {featuredAuctions.map((auction) => (
-          <article key={auction.id} className="auction-card">
-            <div className="auction-image-wrapper">
-              <img src={auction.image} alt={auction.title} className="auction-image" />
-            </div>
+      {isLoading ? (
+        <section className="status-box">
+          <h4>جارٍ تحميل المزادات...</h4>
+          <p>ننتظر الرد الحقيقي من الخادم.</p>
+        </section>
+      ) : errorMessage ? (
+        <section className="status-box error">
+          <h4>تعذر تحميل المزادات</h4>
+          <p>{errorMessage}</p>
+        </section>
+      ) : auctions.length === 0 ? (
+        <section className="status-box empty">
+          <h4>لا توجد مزادات فعالة الآن</h4>
+          <p>عندما يوافق الأدمن على مزادات جديدة وتكون فعالة ستظهر هنا.</p>
+        </section>
+      ) : (
+        <section className="cards-grid">
+          {auctions.map((auction) => (
+            <article key={auction.id} className="auction-card">
+              <div className="auction-image-wrapper">
+                <img
+                  src={auction.imageUrl}
+                  alt={auction.title}
+                  className="auction-image"
+                />
+              </div>
 
-            <div className="auction-content">
-              <h4>{auction.title}</h4>
-              <p className="auction-price">{auction.price} دولار</p>
-              <p className="auction-time">{auction.timeLeft}</p>
-              <button className="accent-btn card-btn">زايد الآن</button>
-            </div>
-          </article>
-        ))}
-      </section>
+              <div className="auction-content">
+                <span className="auction-status">
+                  {auction.isActive ? "مزاد نشط" : "غير نشط"}
+                </span>
+
+                <h4>{auction.title}</h4>
+
+                <p className="auction-description">{auction.description}</p>
+
+                <div className="auction-meta">
+                  <p>
+                    <strong>الفئة:</strong> {auction.categoryName}
+                  </p>
+                  <p>
+                    <strong>البائع:</strong> {auction.sellerName}
+                  </p>
+                </div>
+
+                <p className="auction-price">
+                  السعر الحالي: {formatAuctionPrice(auction.currentPrice)} دولار
+                </p>
+
+                <p className="auction-time">
+                  ينتهي خلال: {formatAuctionTimeLeft(auction.expiresAt)}
+                </p>
+
+                <button className="muted-btn card-btn" type="button" disabled>
+                  صفحة التفاصيل ستُربط لاحقًا
+                </button>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
     </>
   );
 }
