@@ -7,6 +7,7 @@ import {
   logoutUser,
   registerUser,
 } from "../lib/auth";
+import { UNAUTHORIZED_EVENT } from "../lib/api";
 
 const AuthContext = createContext(null);
 
@@ -14,6 +15,21 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(getStoredToken());
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    function handleUnauthorized() {
+      clearToken();
+      setToken(null);
+      setUser(null);
+      setIsLoading(false);
+    }
+
+    window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+
+    return () => {
+      window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+    };
+  }, []);
 
   useEffect(() => {
     async function bootstrapAuth() {
@@ -74,7 +90,7 @@ function AuthProvider({ children }) {
         const currentUser = await fetchMe();
         setUser(currentUser);
       } catch {
-        // لا شيء، يكفي المستخدم الموجود إن وُجد
+        // يكفي المستخدم الموجود إن وُجد
       }
     }
 

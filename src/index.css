@@ -585,3 +585,8 @@ img {
   cursor: not-allowed;
   opacity: 1;
 }
+.info-alert {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}

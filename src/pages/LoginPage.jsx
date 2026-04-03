@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import useAuth from "../hooks/useAuth";
+import { AUTH_NOTICE_KEY } from "../lib/api";
 
 function LoginPage() {
   const { login } = useAuth();
@@ -14,8 +15,18 @@ function LoginPage() {
     password: "",
   });
 
+  const [noticeMessage, setNoticeMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const savedNotice = sessionStorage.getItem(AUTH_NOTICE_KEY);
+
+    if (savedNotice) {
+      setNoticeMessage(savedNotice);
+      sessionStorage.removeItem(AUTH_NOTICE_KEY);
+    }
+  }, []);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -28,6 +39,7 @@ function LoginPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     setErrorMessage("");
+    setNoticeMessage("");
     setIsSubmitting(true);
 
     try {
@@ -48,6 +60,7 @@ function LoginPage() {
           أدخل بياناتك للوصول إلى حسابك والمشاركة في المزادات.
         </p>
 
+        {noticeMessage ? <div className="auth-alert info-alert">{noticeMessage}</div> : null}
         {errorMessage ? <div className="auth-alert error-alert">{errorMessage}</div> : null}
 
         <form onSubmit={handleSubmit} className="auth-form">

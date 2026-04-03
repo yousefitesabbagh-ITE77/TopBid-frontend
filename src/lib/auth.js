@@ -77,7 +77,7 @@ async function fetchMe() {
 async function logoutUser() {
   try {
     await apiRequest("/auth/logout", {
-      method: "POST",
+      method: "DELETE",
     });
   } finally {
     clearToken();
