@@ -39,7 +39,7 @@ function VerifyOtpPage() {
         OTP: formData.OTP,
       });
 
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
     } catch (error) {
       setErrorMessage(error.message || "فشل التحقق من رمز OTP");
     } finally {

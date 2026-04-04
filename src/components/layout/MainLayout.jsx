@@ -16,16 +16,16 @@ function MainLayout() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">
+        <Link to="/home" className="brand brand-link">
           <div className="brand-mark">🔨</div>
           <div>
             <h1>المزاد المتميز</h1>
             <p>TopBid</p>
           </div>
-        </div>
+        </Link>
 
         <nav className="nav-links">
-          <NavLink to="/" end className={navClassName}>
+          <NavLink to="/home" end className={navClassName}>
             الرئيسية
           </NavLink>
           <NavLink to="/how-it-works" className={navClassName}>

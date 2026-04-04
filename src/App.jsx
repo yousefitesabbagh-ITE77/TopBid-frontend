@@ -1,10 +1,12 @@
 import { Routes, Route } from "react-router";
 import MainLayout from "./components/layout/MainLayout";
 import RequireAuth from "./components/auth/RequireAuth";
+import WelcomePage from "./pages/WelcomePage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import VerifyOtpPage from "./pages/VerifyOtpPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import CreateAuctionPage from "./pages/CreateAuctionPage";
 import ProfilePage from "./pages/ProfilePage";
 import AboutPage from "./pages/AboutPage";
@@ -14,13 +16,18 @@ import NotFoundPage from "./pages/NotFoundPage";
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
-        <Route path="verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/" element={<WelcomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+      <Route element={<MainLayout />}>
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
         <Route
-          path="create-auction"
+          path="/create-auction"
           element={
             <RequireAuth>
               <CreateAuctionPage />
@@ -28,15 +35,13 @@ function App() {
           }
         />
         <Route
-          path="profile"
+          path="/profile"
           element={
             <RequireAuth>
               <ProfilePage />
             </RequireAuth>
           }
         />
-        <Route path="about" element={<AboutPage />} />
-        <Route path="how-it-works" element={<HowItWorksPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

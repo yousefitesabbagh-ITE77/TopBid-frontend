@@ -8,7 +8,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const redirectTo = location.state?.from || "/";
+  const redirectTo = location.state?.from || "/home";
 
   const [formData, setFormData] = useState({
     email: "",
@@ -52,6 +52,10 @@ function LoginPage() {
     }
   }
 
+  function handleEnterAsVisitor() {
+    navigate("/home");
+  }
+
   return (
     <section className="auth-page">
       <div className="auth-card">
@@ -88,10 +92,24 @@ function LoginPage() {
             />
           </label>
 
+          <div className="auth-inline-row">
+            <Link to="/forgot-password" className="auth-text-link">
+              نسيت كلمة المرور؟
+            </Link>
+          </div>
+
           <button type="submit" className="primary-btn auth-submit-btn" disabled={isSubmitting}>
             {isSubmitting ? "جار تسجيل الدخول..." : "تسجيل الدخول"}
           </button>
         </form>
+
+        <button
+          type="button"
+          className="ghost-btn auth-secondary-btn"
+          onClick={handleEnterAsVisitor}
+        >
+          الدخول كزائر
+        </button>
 
         <p className="auth-footer">
           ليس لديك حساب؟ <Link to="/register">أنشئ حسابًا الآن</Link>
