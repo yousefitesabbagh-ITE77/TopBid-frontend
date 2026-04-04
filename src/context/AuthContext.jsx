@@ -6,6 +6,8 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  verifyOtpUser,
+  resendOtpCode,
 } from "../lib/auth";
 import { UNAUTHORIZED_EVENT } from "../lib/api";
 
@@ -44,7 +46,7 @@ function AuthProvider({ children }) {
         const currentUser = await fetchMe();
         setUser(currentUser);
         setToken(storedToken);
-      } catch (error) {
+      } catch {
         clearToken();
         setToken(null);
         setUser(null);
@@ -75,29 +77,34 @@ function AuthProvider({ children }) {
   }
 
   async function register(payload) {
-    const { token: newToken, user: registerUserData, response } = await registerUser(payload);
-
-    if (newToken) {
-      setToken(newToken);
-    }
-
-    if (registerUserData) {
-      setUser(registerUserData);
-    }
-
-    if (newToken) {
-      try {
-        const currentUser = await fetchMe();
-        setUser(currentUser);
-      } catch {
-        // يكفي المستخدم الموجود إن وُجد
-      }
-    }
+    const { response } = await registerUser(payload);
 
     return {
       response,
-      didLogin: Boolean(newToken),
+      didLogin: false,
     };
+  }
+
+  async function verifyOtp(payload) {
+    const { token: newToken, user: verifiedUser } = await verifyOtpUser(payload);
+
+    setToken(newToken);
+
+    if (verifiedUser) {
+      setUser(verifiedUser);
+    }
+
+    try {
+      const currentUser = await fetchMe();
+      setUser(currentUser);
+      return currentUser;
+    } catch {
+      return verifiedUser;
+    }
+  }
+
+  async function resendOtp(email) {
+    return resendOtpCode(email);
   }
 
   async function logout() {
@@ -120,6 +127,8 @@ function AuthProvider({ children }) {
       isAuthenticated: Boolean(token),
       login,
       register,
+      verifyOtp,
+      resendOtp,
       logout,
       refreshProfile,
     }),

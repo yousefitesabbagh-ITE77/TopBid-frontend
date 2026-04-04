@@ -56,17 +56,41 @@ async function registerUser(payload) {
     skipAuth: true,
   });
 
+  return {
+    response,
+    token: null,
+    user: null,
+  };
+}
+
+async function verifyOtpUser(payload) {
+  const response = await apiRequest("/auth/verify-otp", {
+    method: "POST",
+    body: payload,
+    skipAuth: true,
+  });
+
   const token = extractToken(response);
 
-  if (token) {
-    saveToken(token);
+  if (!token) {
+    throw new Error("لم يتم إرجاع access token بعد التحقق من OTP");
   }
+
+  saveToken(token);
 
   return {
     response,
     token,
     user: extractUser(response),
   };
+}
+
+async function resendOtpCode(email) {
+  return apiRequest("/auth/resend-otp", {
+    method: "POST",
+    body: { email },
+    skipAuth: true,
+  });
 }
 
 async function fetchMe() {
@@ -91,6 +115,8 @@ export {
   clearToken,
   loginUser,
   registerUser,
+  verifyOtpUser,
+  resendOtpCode,
   fetchMe,
   logoutUser,
 };

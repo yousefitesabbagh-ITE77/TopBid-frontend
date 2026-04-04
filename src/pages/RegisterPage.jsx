@@ -9,16 +9,17 @@ function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone_number: "",
     password: "",
     password_confirmation: "",
   });
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
+
     setFormData((current) => ({
       ...current,
       [name]: value,
@@ -28,19 +29,17 @@ function RegisterPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     setErrorMessage("");
-    setSuccessMessage("");
     setIsSubmitting(true);
 
     try {
-      const result = await register(formData);
-      setSuccessMessage(result.response?.message || "تم إنشاء الحساب بنجاح");
+      await register(formData);
 
-      if (result.didLogin) {
-        navigate("/profile", { replace: true });
-        return;
-      }
-
-      navigate("/login", { replace: true });
+      navigate("/verify-otp", {
+        replace: true,
+        state: {
+          email: formData.email,
+        },
+      });
     } catch (error) {
       setErrorMessage(error.message || "فشل إنشاء الحساب");
     } finally {
@@ -56,8 +55,9 @@ function RegisterPage() {
           أنشئ حسابك للبدء بإضافة المزادات أو المزايدة على العناصر المعروضة.
         </p>
 
-        {errorMessage ? <div className="auth-alert error-alert">{errorMessage}</div> : null}
-        {successMessage ? <div className="auth-alert success-alert">{successMessage}</div> : null}
+        {errorMessage ? (
+          <div className="auth-alert error-alert">{errorMessage}</div>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label className="form-field">
@@ -80,6 +80,18 @@ function RegisterPage() {
               value={formData.email}
               onChange={handleChange}
               placeholder="example@email.com"
+              required
+            />
+          </label>
+
+          <label className="form-field">
+            <span>رقم الهاتف</span>
+            <input
+              type="text"
+              name="phone_number"
+              value={formData.phone_number}
+              onChange={handleChange}
+              placeholder="09xxxxxxxx"
               required
             />
           </label>
@@ -108,8 +120,12 @@ function RegisterPage() {
             />
           </label>
 
-          <button type="submit" className="primary-btn auth-submit-btn" disabled={isSubmitting}>
-            {isSubmitting ? "جار إنشاء الحساب..." : "إنشاء الحساب"}
+          <button
+            type="submit"
+            className="primary-btn auth-submit-btn"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "جارٍ إنشاء الحساب..." : "إنشاء الحساب"}
           </button>
         </form>
 
