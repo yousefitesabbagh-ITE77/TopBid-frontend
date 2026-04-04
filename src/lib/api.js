@@ -46,6 +46,7 @@ function extractErrorMessage(data) {
 
 function handleUnauthorized(message) {
   localStorage.removeItem(TOKEN_KEY);
+
   sessionStorage.setItem(
     AUTH_NOTICE_KEY,
     message || "انتهت صلاحية الجلسة أو أصبحت غير صالحة. سجل الدخول من جديد."
@@ -103,17 +104,13 @@ async function apiRequest(path, options = {}) {
     data = { message: text || "حدث رد غير متوقع من الخادم" };
   }
 
-  const errorMessage = extractErrorMessage(data);
-
   if (response.status === 401 && !skipAuth) {
-    handleUnauthorized(errorMessage);
-    throw new Error(
-      errorMessage || "انتهت صلاحية الجلسة. سجل الدخول من جديد."
-    );
+    handleUnauthorized(extractErrorMessage(data));
+    throw new Error(extractErrorMessage(data));
   }
 
   if (!response.ok) {
-    throw new Error(errorMessage);
+    throw new Error(extractErrorMessage(data));
   }
 
   return data;
