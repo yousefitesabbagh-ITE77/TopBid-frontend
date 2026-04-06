@@ -93,6 +93,22 @@ async function resendOtpCode(email) {
   });
 }
 
+async function requestPasswordReset(email) {
+  return apiRequest("/auth/forgot-password", {
+    method: "POST",
+    body: { email },
+    skipAuth: true,
+  });
+}
+
+async function resetPasswordWithToken(payload) {
+  return apiRequest("/auth/reset-password", {
+    method: "POST",
+    body: payload,
+    skipAuth: true,
+  });
+}
+
 async function fetchMe() {
   const response = await apiRequest("/me");
   return extractUser(response);
@@ -117,6 +133,8 @@ export {
   registerUser,
   verifyOtpUser,
   resendOtpCode,
+  requestPasswordReset,
+  resetPasswordWithToken,
   fetchMe,
   logoutUser,
 };

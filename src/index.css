@@ -850,3 +850,18 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+.reset-help-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: #eff6ff;
+}
+
+.reset-help-box p {
+  margin: 0;
+  color: #1e3a8a;
+  line-height: 1.8;
+  font-size: 14px;
+}
