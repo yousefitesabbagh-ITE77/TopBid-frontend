@@ -95,3 +95,38 @@ export async function fetchActiveAuctions() {
 
   return normalizeAuctionsResponse(response);
 }
+
+function appendAuctionSpecs(formData, specs) {
+  specs.forEach((spec, index) => {
+    const key = spec.key.trim();
+    const value = spec.value.trim();
+
+    if (!key || !value) {
+      return;
+    }
+
+    formData.append(`specs[${index}][key]`, key);
+    formData.append(`specs[${index}][value]`, value);
+  });
+}
+
+export async function createAuction(payload) {
+  const formData = new FormData();
+
+  formData.append("title", payload.title.trim());
+  formData.append("description", payload.description.trim());
+  formData.append("category_id", payload.categoryId);
+  formData.append("starting_price", payload.startingPrice);
+  formData.append("duration_hours", payload.durationHours);
+
+  appendAuctionSpecs(formData, payload.specs || []);
+
+  if (payload.image instanceof File) {
+    formData.append("image", payload.image);
+  }
+
+  return apiRequest("/auctions", {
+    method: "POST",
+    body: formData,
+  });
+}

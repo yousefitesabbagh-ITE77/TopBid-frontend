@@ -7,11 +7,11 @@ function VerifyOtpPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const initialEmail = location.state?.email || "";
+  const initialEmail = location.state?.email || "";  // محاولة الحصول على البريد الإلكتروني من حالة التنقل إذا كانت متاحة، وإلا تبدأ بحقل فارغ
 
   const [formData, setFormData] = useState({
     email: initialEmail,
-    OTP: "",
+    OTP: "",  // حقل لرمز OTP الذي سيدخله المستخدم
   });
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -39,7 +39,7 @@ function VerifyOtpPage() {
         OTP: formData.OTP,
       });
 
-      navigate("/home", { replace: true });
+      navigate("/home", { replace: true });  // إعادة التوجيه إلى الصفحة الرئيسية بعد نجاح التحقق
     } catch (error) {
       setErrorMessage(error.message || "فشل التحقق من رمز OTP");
     } finally {

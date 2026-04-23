@@ -17,7 +17,7 @@ function ForgotPasswordPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await requestPasswordReset(email);
+      const response = await requestPasswordReset(email); 
 
       setSuccessMessage(
         response?.message ||

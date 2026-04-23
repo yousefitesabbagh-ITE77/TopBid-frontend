@@ -14,9 +14,9 @@ function HomePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true; // لمنع تحديث الحالة إذا تم إلغاء تركيب المكون قبل اكتمال التحميل
 
-    async function loadAuctions() {
+    async function loadAuctions() { // تحميل المزادات من الباك
       try {
         setIsLoading(true);
         setErrorMessage("");
@@ -30,19 +30,19 @@ function HomePage() {
         if (isMounted) {
           setErrorMessage(error.message || "تعذر تحميل المزادات الحالية.");
         }
-      } finally {
+      } finally {  // إيقاف حالة التحميل سواء نجح التحميل أو فشل
         if (isMounted) {
           setIsLoading(false);
         }
       }
     }
 
-    loadAuctions();
+    loadAuctions();  // استدعاء الدالة لتحميل المزادات عند تركيب المكون
 
-    return () => {
+    return () => { // تنظيف عند إلغاء تركيب المكون لمنع تحديث الحالة بعد إلغاء التركيب
       isMounted = false;
     };
-  }, []);
+  }, []); // يتم تنفيذ هذا التأثير مرة واحدة عند تركيب المكون
 
   return (
     <>

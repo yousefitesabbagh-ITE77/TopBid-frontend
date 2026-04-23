@@ -16,7 +16,7 @@ function ProfilePage() {
 
   useEffect(() => {
     setFormData(toProfileFormValues(user));
-  }, [user]);
+  }, [user]); // تحديث بيانات النموذج كلما تغيرت بيانات المستخدم في السياق (مثل بعد تحميل البيانات أو تحديثها)
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -30,11 +30,11 @@ function ProfilePage() {
   function handleStartEditing() {
     setErrorMessage("");
     setSuccessMessage("");
-    setFormData(toProfileFormValues(user));
+    setFormData(toProfileFormValues(user));  // إعادة تعيين بيانات النموذج إلى القيم الحالية للمستخدم من السياق عند بدء التعديل، لضمان أن المستخدم يبدأ بالتعديل على أحدث البيانات
     setIsEditing(true);
   }
 
-  function handleCancelEditing() {
+  function handleCancelEditing() {  // عند إلغاء التعديل، نعيد تعيين بيانات النموذج إلى القيم الحالية للمستخدم من السياق مرة أخرى، مما يلغي أي تغييرات غير محفوظة
     setErrorMessage("");
     setSuccessMessage("");
     setFormData(toProfileFormValues(user));
