@@ -61,6 +61,19 @@ export function formatAuctionTimeLeft(expiresAt) {
   return `${minutes} دقيقة`;
 }
 
+function normalizeSpecs(specs) {
+  if (!Array.isArray(specs)) {
+    return [];
+  }
+
+  return specs
+    .map((spec) => ({
+      key: spec?.key || "",
+      value: spec?.value || "",
+    }))
+    .filter((spec) => spec.key && spec.value);
+}
+
 export function normalizeAuction(auction) {
   return {
     id: auction.id,
@@ -69,23 +82,48 @@ export function normalizeAuction(auction) {
     currentPrice: auction?.prices?.current ?? auction?.prices?.starting ?? 0,
     startingPrice: auction?.prices?.starting ?? 0,
     expiresAt: auction?.times?.expires_at || null,
+    startedAt: auction?.times?.started_at || null,
     imageUrl: buildAuctionImageUrl(auction?.image?.path),
     categoryName: auction?.category?.name || "غير مصنفة",
     sellerName: auction?.seller?.name || "غير معروف",
+    sellerId: auction?.seller?.id || null,
+    specs: normalizeSpecs(auction?.specs),
     isActive: Boolean(auction?.status?.is_active),
+    moderationStatus: auction?.status?.moderation || "غير معروف",
+    durationHours: Number(auction?.duration_hours ?? 0),
   };
 }
 
-export function normalizeAuctionsResponse(response) {
+function extractAuctionsListPayload(response) {
   const payload = response?.data;
 
-  const items = Array.isArray(payload?.data)
-    ? payload.data
-    : Array.isArray(payload)
-    ? payload
-    : [];
+  if (Array.isArray(payload?.data)) {
+    return payload.data;
+  }
 
-  return items.map(normalizeAuction);
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  return [];
+}
+
+function extractSingleAuctionPayload(response) {
+  const payload = response?.data;
+
+  if (payload?.data && !Array.isArray(payload.data)) {
+    return payload.data;
+  }
+
+  if (payload && !Array.isArray(payload)) {
+    return payload;
+  }
+
+  return null;
+}
+
+export function normalizeAuctionsResponse(response) {
+  return extractAuctionsListPayload(response).map(normalizeAuction);
 }
 
 export async function fetchActiveAuctions() {
@@ -94,6 +132,17 @@ export async function fetchActiveAuctions() {
   });
 
   return normalizeAuctionsResponse(response);
+}
+
+export async function fetchAuctionDetails(auctionId) {
+  const response = await apiRequest(`/auctions/${auctionId}`);
+  const auction = extractSingleAuctionPayload(response);
+
+  if (!auction) {
+    throw new Error("تعذر تحميل تفاصيل المزاد.");
+  }
+
+  return normalizeAuction(auction);
 }
 
 function appendAuctionSpecs(formData, specs) {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import {
   fetchActiveAuctions,
   formatAuctionPrice,
@@ -14,9 +15,9 @@ function HomePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    let isMounted = true; // لمنع تحديث الحالة إذا تم إلغاء تركيب المكون قبل اكتمال التحميل
+    let isMounted = true;
 
-    async function loadAuctions() { // تحميل المزادات من الباك
+    async function loadAuctions() {
       try {
         setIsLoading(true);
         setErrorMessage("");
@@ -30,19 +31,19 @@ function HomePage() {
         if (isMounted) {
           setErrorMessage(error.message || "تعذر تحميل المزادات الحالية.");
         }
-      } finally {  // إيقاف حالة التحميل سواء نجح التحميل أو فشل
+      } finally {
         if (isMounted) {
           setIsLoading(false);
         }
       }
     }
 
-    loadAuctions();  // استدعاء الدالة لتحميل المزادات عند تركيب المكون
+    loadAuctions();
 
-    return () => { // تنظيف عند إلغاء تركيب المكون لمنع تحديث الحالة بعد إلغاء التركيب
+    return () => {
       isMounted = false;
     };
-  }, []); // يتم تنفيذ هذا التأثير مرة واحدة عند تركيب المكون
+  }, []);
 
   return (
     <>
@@ -56,8 +57,12 @@ function HomePage() {
           </p>
 
           <div className="hero-actions">
-            <button className="accent-btn">ابدأ المزايدة الآن</button>
-            <button className="ghost-btn dark-ghost">استكشف المزادات</button>
+            <Link to="/home" className="accent-btn topbar-link-btn">
+              استكشف المزادات
+            </Link>
+            <Link to="/create-auction" className="ghost-btn dark-ghost topbar-link-btn">
+              أنشئ مزادك الآن
+            </Link>
           </div>
         </div>
 
@@ -70,7 +75,7 @@ function HomePage() {
         <div className="section-header-row">
           <div>
             <h3>المزادات الحالية</h3>
-            <p>هذه القائمة قادمة الآن من الباك الحقيقي بدل البيانات الثابتة.</p>
+            <p>يمكنك الآن الدخول إلى صفحة تفاصيل كل مزاد من هذه القائمة.</p>
           </div>
 
           {!isLoading && !errorMessage && auctions.length > 0 ? (
@@ -132,9 +137,12 @@ function HomePage() {
                   ينتهي خلال: {formatAuctionTimeLeft(auction.expiresAt)}
                 </p>
 
-                <button className="muted-btn card-btn" type="button" disabled>
-                  صفحة التفاصيل ستُربط لاحقًا
-                </button>
+                <Link
+                  to={`/auctions/${auction.id}`}
+                  className="primary-btn topbar-link-btn card-btn"
+                >
+                  عرض التفاصيل والمزايدة
+                </Link>
               </div>
             </article>
           ))}

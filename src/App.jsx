@@ -9,6 +9,7 @@ import VerifyOtpPage from "./pages/VerifyOtpPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CreateAuctionPage from "./pages/CreateAuctionPage";
+import AuctionDetailsPage from "./pages/AuctionDetailsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AboutPage from "./pages/AboutPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
@@ -33,6 +34,14 @@ function App() {
           element={
             <RequireAuth>
               <CreateAuctionPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/auctions/:id"
+          element={
+            <RequireAuth>
+              <AuctionDetailsPage />
             </RequireAuth>
           }
         />
