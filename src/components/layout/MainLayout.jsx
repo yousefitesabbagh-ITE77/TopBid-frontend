@@ -28,6 +28,11 @@ function MainLayout() {
           <NavLink to="/home" end className={navClassName}>
             الرئيسية
           </NavLink>
+          {isAuthenticated ? (
+            <NavLink to="/my-auctions" className={navClassName}>
+              مزاداتي
+            </NavLink>
+          ) : null}
           <NavLink to="/how-it-works" className={navClassName}>
             كيف يشتغل؟
           </NavLink>

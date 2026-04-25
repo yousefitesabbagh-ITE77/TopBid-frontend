@@ -94,18 +94,30 @@ export function normalizeAuction(auction) {
   };
 }
 
-function extractAuctionsListPayload(response) {
+function extractCollectionPayload(response) {
   const payload = response?.data;
 
-  if (Array.isArray(payload?.data)) {
+  if (payload && Array.isArray(payload.data)) {
+    return payload;
+  }
+
+  if (payload?.data && Array.isArray(payload.data.data)) {
     return payload.data;
   }
 
   if (Array.isArray(payload)) {
-    return payload;
+    return {
+      data: payload,
+      links: null,
+      meta: null,
+    };
   }
 
-  return [];
+  return {
+    data: [],
+    links: null,
+    meta: null,
+  };
 }
 
 function extractSingleAuctionPayload(response) {
@@ -122,8 +134,25 @@ function extractSingleAuctionPayload(response) {
   return null;
 }
 
+function normalizePaginationData(payload, itemsLength = 0) {
+  const meta = payload?.meta || {};
+  const links = payload?.links || {};
+
+  return {
+    currentPage: Number(meta.current_page || 1),
+    lastPage: Number(meta.last_page || 1),
+    perPage: Number(meta.per_page || itemsLength || 0),
+    total: Number(meta.total || itemsLength || 0),
+    from: Number(meta.from || 0),
+    to: Number(meta.to || 0),
+    hasPreviousPage: Boolean(links.prev),
+    hasNextPage: Boolean(links.next),
+  };
+}
+
 export function normalizeAuctionsResponse(response) {
-  return extractAuctionsListPayload(response).map(normalizeAuction);
+  const payload = extractCollectionPayload(response);
+  return payload.data.map(normalizeAuction);
 }
 
 export async function fetchActiveAuctions() {
@@ -143,6 +172,34 @@ export async function fetchAuctionDetails(auctionId) {
   }
 
   return normalizeAuction(auction);
+}
+
+export async function fetchMyAuctions({
+  status = "active",
+  perPage = 10,
+  page = 1,
+} = {}) {
+  const params = new URLSearchParams();
+
+  if (status) {
+    params.set("status", status);
+  }
+
+  if (perPage) {
+    params.set("per_page", String(perPage));
+  }
+
+  if (page) {
+    params.set("page", String(page));
+  }
+
+  const response = await apiRequest(`/my-auctions?${params.toString()}`);
+  const payload = extractCollectionPayload(response);
+
+  return {
+    items: payload.data.map(normalizeAuction),
+    pagination: normalizePaginationData(payload, payload.data.length),
+  };
 }
 
 function appendAuctionSpecs(formData, specs) {
