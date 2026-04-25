@@ -1,27 +1,56 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import useAuth from "../hooks/useAuth";
-import { toProfileFormValues, updateCurrentProfile } from "../lib/profile";
+import { AUTH_NOTICE_KEY } from "../lib/api";
+import { clearToken } from "../lib/auth";
+import {
+  changeCurrentPassword,
+  toProfileFormValues,
+  updateCurrentProfile,
+} from "../lib/profile";
+
+const INITIAL_PASSWORD_FORM = {
+  old_password: "",
+  password: "",
+  password_confirmation: "",
+};
 
 function ProfilePage() {
   const { user, isLoading, refreshProfile, logout } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState(toProfileFormValues(null));
+  const [passwordFormData, setPasswordFormData] = useState(INITIAL_PASSWORD_FORM);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
 
   useEffect(() => {
     setFormData(toProfileFormValues(user));
-  }, [user]); // تحديث بيانات النموذج كلما تغيرت بيانات المستخدم في السياق (مثل بعد تحميل البيانات أو تحديثها)
+  }, [user]);
 
   function handleChange(event) {
     const { name, value } = event.target;
 
+    setErrorMessage("");
+    setSuccessMessage("");
+
     setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+
+  function handlePasswordChange(event) {
+    const { name, value } = event.target;
+
+    setPasswordErrorMessage("");
+
+    setPasswordFormData((current) => ({
       ...current,
       [name]: value,
     }));
@@ -30,11 +59,11 @@ function ProfilePage() {
   function handleStartEditing() {
     setErrorMessage("");
     setSuccessMessage("");
-    setFormData(toProfileFormValues(user));  // إعادة تعيين بيانات النموذج إلى القيم الحالية للمستخدم من السياق عند بدء التعديل، لضمان أن المستخدم يبدأ بالتعديل على أحدث البيانات
+    setFormData(toProfileFormValues(user));
     setIsEditing(true);
   }
 
-  function handleCancelEditing() {  // عند إلغاء التعديل، نعيد تعيين بيانات النموذج إلى القيم الحالية للمستخدم من السياق مرة أخرى، مما يلغي أي تغييرات غير محفوظة
+  function handleCancelEditing() {
     setErrorMessage("");
     setSuccessMessage("");
     setFormData(toProfileFormValues(user));
@@ -57,6 +86,30 @@ function ProfilePage() {
       setErrorMessage(error.message || "تعذر تحديث الملف الشخصي.");
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handlePasswordSubmit(event) {
+    event.preventDefault();
+    setPasswordErrorMessage("");
+    setIsChangingPassword(true);
+
+    try {
+      await changeCurrentPassword(passwordFormData);
+
+      setPasswordFormData(INITIAL_PASSWORD_FORM);
+
+      sessionStorage.setItem(
+        AUTH_NOTICE_KEY,
+        "تم تغيير كلمة المرور بنجاح. سجّل الدخول مرة أخرى باستخدام كلمة المرور الجديدة."
+      );
+
+      clearToken();
+      window.location.assign("/login");
+    } catch (error) {
+      setPasswordErrorMessage(error.message || "تعذر تغيير كلمة المرور.");
+    } finally {
+      setIsChangingPassword(false);
     }
   }
 
@@ -109,6 +162,8 @@ function ProfilePage() {
                 <code> GET /api/me </code>
                 ويمكن تعديل البيانات الأساسية عبر
                 <code> PUT /api/me </code>
+                وتغيير كلمة المرور عبر
+                <code> PUT /api/me/password </code>
               </p>
             </div>
           </div>
@@ -266,6 +321,77 @@ function ProfilePage() {
             </div>
           </form>
         )}
+      </div>
+
+      <div className="profile-page-card profile-password-card">
+        <div className="profile-password-header">
+          <div>
+            <h3>تغيير كلمة المرور</h3>
+            <p className="profile-password-subtitle">
+              أدخل كلمة المرور الحالية، ثم اختر كلمة مرور جديدة وأكدها. بعد النجاح
+              سيطلب منك النظام تسجيل الدخول مرة أخرى لحماية الحساب.
+            </p>
+          </div>
+        </div>
+
+        {passwordErrorMessage ? (
+          <div className="auth-alert error-alert">{passwordErrorMessage}</div>
+        ) : null}
+
+        <form onSubmit={handlePasswordSubmit} className="auth-form">
+          <div className="profile-password-grid">
+            <label className="form-field profile-password-field-wide">
+              <span>كلمة المرور الحالية</span>
+              <input
+                type="password"
+                name="old_password"
+                value={passwordFormData.old_password}
+                onChange={handlePasswordChange}
+                placeholder="أدخل كلمة المرور الحالية"
+                required
+              />
+            </label>
+
+            <label className="form-field">
+              <span>كلمة المرور الجديدة</span>
+              <input
+                type="password"
+                name="password"
+                value={passwordFormData.password}
+                onChange={handlePasswordChange}
+                placeholder="8 أحرف على الأقل"
+                minLength="8"
+                required
+              />
+            </label>
+
+            <label className="form-field">
+              <span>تأكيد كلمة المرور الجديدة</span>
+              <input
+                type="password"
+                name="password_confirmation"
+                value={passwordFormData.password_confirmation}
+                onChange={handlePasswordChange}
+                placeholder="أعد كتابة كلمة المرور الجديدة"
+                minLength="8"
+                required
+              />
+            </label>
+          </div>
+
+          <div className="profile-password-help-box">
+            <p>
+              لأسباب أمنية، بعد تغيير كلمة المرور سيُبطل الباك الجلسة الحالية، ثم
+              سيتم تحويلك مباشرة إلى صفحة تسجيل الدخول.
+            </p>
+          </div>
+
+          <div className="profile-form-actions">
+            <button type="submit" className="primary-btn" disabled={isChangingPassword}>
+              {isChangingPassword ? "جار تغيير كلمة المرور..." : "تغيير كلمة المرور"}
+            </button>
+          </div>
+        </form>
       </div>
     </section>
   );

@@ -18,4 +18,11 @@ async function updateCurrentProfile(payload) {
   });
 }
 
-export { toProfileFormValues, updateCurrentProfile };
+async function changeCurrentPassword(payload) {
+  return apiRequest("/me/password", {
+    method: "PUT",
+    body: payload,
+  });
+}
+
+export { toProfileFormValues, updateCurrentProfile, changeCurrentPassword };
